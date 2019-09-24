@@ -7,66 +7,59 @@ import os
 import glob
 import textdistance as td
 
-#getcwd = 현재 폴더, chdir=> 작업폴더 변경
-os.getcwd()
 os.chdir('C:\\Pydir')
-print("avs")
-
-#todo 전체를 Looping ( 폴더에서 Glob로 가져온 CSV 이름들을 저장해놓고 루핑하기) #
-    # TIP path = 'C:\\Users\\chha8004\\Documents\\GTC 정규\\01_MACRO\\01_IMDB Extractiong\\TOTAL\\*.csv'
-    # TIP for data_path in glob.glob(path, recursive=True)
 
 
     #Assigning Column data type & sorting
 
-    df = pd.read_csv('Fruit Juice.CSV', encoding="cp949", index_col = False)
-    df['ITEM CREATED DATE'] = df['ITEM CREATED DATE'].str.replace("오전", "AM")
-    df['ITEM CREATED DATE'] = df['ITEM CREATED DATE'].str.replace("오후", "PM")
-    df['ITEM CREATED DATE'] = df['ITEM CREATED DATE'].str.strip()
-    df['ITEM CREATED DATE'] = pd.to_datetime(df['ITEM CREATED DATE'], format='%d/%m/%Y %p %I:%M:%S')
+        df = pd.read_csv('Fruit Juice.CSV', encoding="cp949", index_col = False)
+        df['ITEM CREATED DATE'] = df['ITEM CREATED DATE'].str.replace("오전", "AM")
+        df['ITEM CREATED DATE'] = df['ITEM CREATED DATE'].str.replace("오후", "PM")
+        df['ITEM CREATED DATE'] = df['ITEM CREATED DATE'].str.strip()
+        df['ITEM CREATED DATE'] = pd.to_datetime(df['ITEM CREATED DATE'], format='%d/%m/%Y %p %I:%M:%S')
 
-    df["ITEM"] = df["ITEM"].astype('int64')
+        df["ITEM"] = df["ITEM"].astype('int64')
 
-    df=df.sort_values('OTHER DESC')
-    df = df.reset_index(drop = True)
-    df = df[df["CPS_INDICATOR_OTHER DESC"]!= "CPS"]
+        df=df.sort_values('OTHER DESC')
+        df = df.reset_index(drop = True)
+        df = df[df["CPS_INDICATOR_OTHER DESC"]!= "CPS"]
 
 
     # NEW ITEM CHECK WITH NUMPY WHERE FUNCTION as 'N' -> Pop up value insert
 
-    New = np.where(pd.to_datetime(df['ITEM CREATED DATE'], format='%y/%m/%d') >= '2019/07/05','N', '')
-    df.insert(0, 'N', New)
+        New = np.where(pd.to_datetime(df['ITEM CREATED DATE'], format='%y/%m/%d') >= '2019/07/05','N', '')
+        df.insert(0, 'N', New)
 
 
     #Column Switching - Eng desc O
 
-    cols1 = df.columns.tolist()
+        cols1 = df.columns.tolist()
 
-    cols1[5:15]=['OTHER DESC','BASE UOM QTY','BASE UOM CODE','MULTIPACK','MANU_31', 'MANU DESC', 'MANU OTHER', 'BRAND_32', 'BRAND DESC', 'BRAND OTHER']
+        cols1[5:15]=['OTHER DESC','BASE UOM QTY','BASE UOM CODE','MULTIPACK','MANU_31', 'MANU DESC', 'MANU OTHER', 'BRAND_32', 'BRAND DESC', 'BRAND OTHER']
 
-    dfe = df[cols1]
+        dfe = df[cols1]
 
     #Column Switching - Eng desc X
 
-    cols = df.columns.tolist()
-    cols2 = np.array(cols)
+        cols = df.columns.tolist()
+        cols2 = np.array(cols)
 
-        # Arrange Desc, UOM, MN/BR Order
-        cols2[5:15]=['OTHER DESC','BASE UOM QTY','BASE UOM CODE','MULTIPACK','MANU_31', 'MANU DESC', 'MANU OTHER', 'BRAND_32', 'BRAND DESC', 'BRAND OTHER']
-        a =  ['MANU DESC','BRAND DESC']
+            # Arrange Desc, UOM, MN/BR Order
+            cols2[5:15]=['OTHER DESC','BASE UOM QTY','BASE UOM CODE','MULTIPACK','MANU_31', 'MANU DESC', 'MANU OTHER', 'BRAND_32', 'BRAND DESC', 'BRAND OTHER']
+            a =  ['MANU DESC','BRAND DESC']
 
-        #Delete MN/BR Desc
-        cols2 =np.delete(cols2,(10,13),0)
+            #Delete MN/BR Desc
+            cols2 =np.delete(cols2,(10,13),0)
 
-        #Delete Eng description columns
-        dfcols2 =pd.DataFrame(cols2,columns=['Column'])
-        collist2 =dfcols2.loc[dfcols2['Column'].str.contains('_DESC')]
-        engdesc = collist2.index.tolist()
-        colskr = np.delete(cols2,engdesc,0)
+            #Delete Eng description columns
+            dfcols2 =pd.DataFrame(cols2,columns=['Column'])
+            collist2 =dfcols2.loc[dfcols2['Column'].str.contains('_DESC')]
+            engdesc = collist2.index.tolist()
+            colskr = np.delete(cols2,engdesc,0)
 
-        #Df with only KR desc
-        dfk = df[colskr]
-        dfk = dfk.reset_index(drop = True)
+            #Df with only KR desc
+            dfk = df[colskr]
+            dfk = dfk.reset_index(drop = True)
 
 
         #Rename Attribute Value Columns to Attribute Number
@@ -95,130 +88,113 @@ print("avs")
         return float(len(c)) / (len(a) + len(b) - len(c))
 
         #other desc similarity-Jaccard index
-        simip1 = list()
-        for i in range(0, dfk.index[-1]):
-            simip1.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i + 1]))
-        print(simip1)
-        simip1.append(0)
-        dfk['sim_1'] = simip1
+            simip1 = list()
+            for i in range(0, dfk.index[-1]):
+                simip1.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i + 1]))
+            print(simip1)
+            simip1.append(0)
+            dfk['sim_1'] = simip1
 
-        simip2 = list()
-        for i in range(0, dfk.index[-1] - 1):
-            simip2.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i + 2]))
-        print(simip2)
-        simip2.append(0)
-        simip2.append(0)
-        dfk['sim_2'] = simip2
+            simip2 = list()
+            for i in range(0, dfk.index[-1] - 1):
+                simip2.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i + 2]))
+            print(simip2)
+            simip2.append(0)
+            simip2.append(0)
+            dfk['sim_2'] = simip2
 
-        simip3 = list()
-        for i in range(0, dfk.index[-1] - 2):
-            simip3.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i + 3]))
-        print(simip3)
-        simip3.append(0)
-        simip3.append(0)
-        simip3.append(0)
-        dfk['sim_3'] = simip3
+            simip3 = list()
+            for i in range(0, dfk.index[-1] - 2):
+                simip3.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i + 3]))
+            print(simip3)
+            simip3.append(0)
+            simip3.append(0)
+            simip3.append(0)
+            dfk['sim_3'] = simip3
 
-        simim1 = list()
-        simim1.append(0)
-        for i in range(1, dfk.index[-1] + 1):
-            simim1.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i - 1]))
-        print(simim1)
-        dfk['sim_m1'] = simim1
+            simim1 = list()
+            simim1.append(0)
+            for i in range(1, dfk.index[-1] + 1):
+                simim1.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i - 1]))
+            print(simim1)
+            dfk['sim_m1'] = simim1
 
-        simim2 = list()
-        simim2.append(0)
-        simim2.append(0)
-        for i in range(2, dfk.index[-1] + 1):
-            simim2.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i - 2]))
-        print(simim2)
-        dfk['sim_m2'] = simim2
+            simim2 = list()
+            simim2.append(0)
+            simim2.append(0)
+            for i in range(2, dfk.index[-1] + 1):
+                simim2.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i - 2]))
+            print(simim2)
+            dfk['sim_m2'] = simim2
 
-        simim3 = list()
-        simim3.append(0)
-        simim3.append(0)
-        simim3.append(0)
-        for i in range(3, dfk.index[-1] + 1):
-            simim3.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i - 3]))
-        print(simim3)
-        dfk['sim_m3'] = simim3
+            simim3 = list()
+            simim3.append(0)
+            simim3.append(0)
+            simim3.append(0)
+            for i in range(3, dfk.index[-1] + 1):
+                simim3.append(get_jaccard_sim(dfk["OTHER DESC"][i], dfk["OTHER DESC"][i - 3]))
+            print(simim3)
+            dfk['sim_m3'] = simim3
 
         # Max value to new column
 
-        colskr2 = pd.DataFrame(dfk.columns, columns=['Col'])
-        simcol = colskr2[colskr2['Col'].str.contains('sim')].index.tolist()
+            colskr2 = pd.DataFrame(dfk.columns, columns=['Col'])
+            simcol = colskr2[colskr2['Col'].str.contains('sim')].index.tolist()
 
         # Max value to new column- insert
 
-        sim_max = list()
+            sim_max = list()
 
-        for i in dfk.index:
-            sim_max.append(dfk.ix[i, simcol[0]:simcol[-1]].max())
-        print(sim_max)
-        dfk['Jaccard_index'] = sim_max
+            for i in dfk.index:
+                sim_max.append(dfk.ix[i, simcol[0]:simcol[-1]].max())
+            print(sim_max)
+            dfk['Jaccard_index'] = sim_max
 
         # Max value index to column
-        sim_max_col = list()
-        len(sim_max_col)
+            sim_max_col = list()
+            len(sim_max_col)
 
-        for i in dfk.index:
-            if dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1] - 5]:
-                sim_max_col.append(1)
-            elif dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1] - 4]:
-                sim_max_col.append(2)
-            elif dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1] - 3]:
-                sim_max_col.append(3)
-            elif dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1] - 2]:
-                sim_max_col.append(-1)
-            elif dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1] - 1]:
-                sim_max_col.append(-2)
-            elif dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1]]:
-                sim_max_col.append(-3)
+            for i in dfk.index:
+                if dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1] - 5]:
+                    sim_max_col.append(1)
+                elif dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1] - 4]:
+                    sim_max_col.append(2)
+                elif dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1] - 3]:
+                    sim_max_col.append(3)
+                elif dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1] - 2]:
+                    sim_max_col.append(-1)
+                elif dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1] - 1]:
+                    sim_max_col.append(-2)
+                elif dfk.ix[i, simcol[-1] + 1] == dfk.ix[i, simcol[-1]]:
+                    sim_max_col.append(-3)
 
 
             # Max value index to column- insert
-            dfk['Max_row'] = sim_max_col
+                dfk['Max_row'] = sim_max_col
 
         # Attribute Value Similarity rate
 
         #New Item df
-           ##Ver1
-
-            # dfk.insert(0, 'S_Itemcode', '')
-            # for i in dfk.index:
-              #   if dfk.iloc[i, 1] == 'N':
-                #     dfk.iloc[int(i + dfk.iloc[i, dfk.columns.get_loc("Max_row")]), 0] = int(dfk.iloc[i, 2])
-            #dfn = dfk[(dfk['N']!="")|(dfk['S_Itemcode']!="")]
-
-          ##Ver2
-            dfns = pd.DataFrame()
+           dfns = pd.DataFrame()
              for i in dfk.index:
                 if dfk.iloc[i, 0] == 'N':
                     dfns = dfns.append(dfk.iloc[[i]], ignore_index=True)
                     dfns = dfns.append(dfk.iloc[[i+dfk.loc[i,'Max_row']]], ignore_index=True)
 
-
-
-                #for i in dfk.index:
-                #if dfk.iloc[i, 1] == 'N':
-                #dfk.iloc[int(i+dfk.iloc[i,dfk.columns.get_loc("Max_row")]),0] = int(dfk.iloc[i,2])
-                #matching_rate.append(float(sum(dfn.iloc[j, i] == dfn.iloc[j + dfn.iloc[j, dfn.columns.get_loc('Max_row')], i])
-
         #Check Attribute Similarity rate
-        ### tested_cols = ['ATTR1', 'ATTR2', 'ATTR3']   =>
-        uomlistns = pd.DataFrame(dfns.columns, columns=['Col'])
-        uomns = uomlistns[uomlistns['Col'].str.contains('-')].index.tolist()
-        tested_col_a = dfns.columns[(uomns[-1]+1):dfns.columns.get_loc("sim_1")]
-        tested_col_mb= dfns.columns[9:13]
-        attr_col = tested_col_a.union(tested_col_mb)
+            uomlistns = pd.DataFrame(dfns.columns, columns=['Col'])
+            uomns = uomlistns[uomlistns['Col'].str.contains('-')].index.tolist()
+            tested_col_a = dfns.columns[(uomns[-1]+1):dfns.columns.get_loc("sim_1")]
+            tested_col_mb= dfns.columns[9:13]
+            attr_col = tested_col_a.union(tested_col_mb)
 
         ###df2['matches'] = 0
-        dfns['Match'] = 0
+            dfns['Match'] = 0
                for col in attr_col:
                 dfns.loc[(dfns.iloc[::2]['N']=='N') & (dfns[col] == dfns[col].shift(-1)), 'Match'] += 1
                 dfns['ATTR_MATCHING_RATE'] = dfns['Match'] / len(attr_col)
 
         #Levenshtein Distance
-        dfns['LV_Similarity']=0
-          for i in range(0,dfns.tail(1).index[0],2):
-            dfns.iloc[i,-1] = td.levenshtein.normalized_similarity(dfns["OTHER DESC"][i],dfns["OTHER DESC"][i+1])
+            dfns['LV_Similarity']=0
+              for i in range(0,dfns.tail(1).index[0],2):
+                dfns.iloc[i,-1] = td.levenshtein.normalized_similarity(dfns["OTHER DESC"][i],dfns["OTHER DESC"][i+1])
